@@ -7,6 +7,6 @@
 <title>Insert title here</title>
 </head>
 <body>
-	Trang của user
+	trang chủ của manager
 </body>
 </html>

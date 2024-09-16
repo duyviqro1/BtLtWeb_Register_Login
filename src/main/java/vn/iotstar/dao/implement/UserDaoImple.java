@@ -27,7 +27,8 @@ public class UserDaoImple extends DBConnectMySQL implements IUserDao {
 
 			while (rs.next()) {
 				list.add(new UserModel(rs.getInt("id"), rs.getString("username"), rs.getString("email"),
-						rs.getString("fullname"), rs.getString("image"), rs.getString("password")));
+						rs.getString("fullname"), rs.getString("image"), rs.getString("password"),
+						rs.getString("phone"), rs.getInt("roleid"), rs.getDate("createDate")));
 			}
 			return list;
 
@@ -40,7 +41,7 @@ public class UserDaoImple extends DBConnectMySQL implements IUserDao {
 
 	@Override
 	public UserModel findById(int id) {
-		String sql = "select * from user where users.id = ?";
+		String sql = "select * from user where user.id = ?";
 
 		try {
 			conn = super.getDatabaseConnection();
@@ -50,7 +51,8 @@ public class UserDaoImple extends DBConnectMySQL implements IUserDao {
 
 			if (rs.next()) {
 				return new UserModel(rs.getInt("id"), rs.getString("username"), rs.getString("email"),
-						rs.getString("password"), rs.getString("fullname"), rs.getString("image"));
+						rs.getString("password"), rs.getString("fullname"), rs.getString("image"),
+						rs.getString("phone"), rs.getInt("roleid"), rs.getDate("createDate"));
 			}
 
 		} catch (Exception e) {
@@ -62,19 +64,21 @@ public class UserDaoImple extends DBConnectMySQL implements IUserDao {
 
 	@Override
 	public void insert(UserModel user) {
-		String sql = "INSERT INTO user (id, username, email, fullname, image, password) VALUES (?, ?, ?, ?, ?, ?) ";
+		String sql = "INSERT INTO user (username, email, fullname, image, password, roleid, phone, createDate) VALUES (?, ?, ?, ?, ?, ?, ?, ?) ";
 
 		try {
 			conn = super.getDatabaseConnection();
 
 			ps = conn.prepareStatement(sql);
 
-			ps.setInt(1, user.getId());
-			ps.setString(2, user.getUsername());
-			ps.setString(3, user.getEmail());
-			ps.setString(4, user.getFullname());
-			ps.setString(5, user.getImage());
-			ps.setString(6, user.getPassword());
+			ps.setString(1, user.getUsername());
+			ps.setString(2, user.getEmail());
+			ps.setString(3, user.getFullname());
+			ps.setString(4, user.getImage());
+			ps.setString(5, user.getPassword());
+			ps.setInt(6, user.getRoleid());
+			ps.setString(7, user.getPhone());
+			ps.setDate(8, user.getCreateDate());
 
 			ps.executeUpdate();
 
@@ -82,63 +86,6 @@ public class UserDaoImple extends DBConnectMySQL implements IUserDao {
 			e.printStackTrace();
 		}
 
-	}
-
-	@Override
-	public UserModel login(String username, String password) {
-		UserModel user = this.findByUsername(username);
-		if (user != null && password.equals(user.getPassword())) {
-			return user;
-		}
-		return null;
-	}
-
-	@Override
-	public boolean register(int id, String username, String email, String fullname, String image, String password) {
-		if (this.checkExistUsername(username) || this.checkExistEmail(email))
-			return false;
-		this.insert(new UserModel(id, username, email, fullname, image, password));
-		return true;
-	}
-
-	@Override
-	public boolean checkExistUsername(String username) {
-		String sql = "select * from user where username = ?";
-
-		try {
-			conn = super.getDatabaseConnection();
-			ps = conn.prepareStatement(sql);
-			ps.setString(1, username);
-			rs = ps.executeQuery();
-
-			if (rs.next()) {
-				return true;
-			}
-
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-		return false;
-	}
-
-	@Override
-	public boolean checkExistEmail(String email) {
-		String sql = "select * from user where email = ?";
-
-		try {
-			conn = super.getDatabaseConnection();
-			ps = conn.prepareStatement(sql);
-			ps.setString(1, email);
-			rs = ps.executeQuery();
-
-			if (rs.next()) {
-				return true;
-			}
-
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-		return false;
 	}
 
 	@Override
@@ -153,7 +100,8 @@ public class UserDaoImple extends DBConnectMySQL implements IUserDao {
 
 			if (rs.next()) {
 				return new UserModel(rs.getInt("id"), rs.getString("username"), rs.getString("email"),
-						rs.getString("fullname"), rs.getString("image"), rs.getString("password"));
+						rs.getString("fullname"), rs.getString("image"), rs.getString("password"),
+						rs.getString("phone"), rs.getInt("roleid"), rs.getDate("createDate"));
 			}
 
 		} catch (Exception e) {
@@ -162,17 +110,79 @@ public class UserDaoImple extends DBConnectMySQL implements IUserDao {
 		return null;
 	}
 
+	@Override
+	public boolean checkExistEmail(String email) {
+		boolean duplicate = false;
+		String query = "SELECT * FROM user WHERE email = ?";
+
+		try {
+			conn = super.getDatabaseConnection();
+			ps = conn.prepareStatement(query);
+			ps.setString(1, email);
+			rs = ps.executeQuery();
+
+			if (rs.next()) {
+				duplicate = true;
+			}
+			ps.close();
+			conn.close();
+		} catch (Exception ex) {
+			ex.printStackTrace();
+		}
+		return duplicate;
+	}
+
+	@Override
+	public boolean checkExistUsername(String username) {
+		boolean duplicate = false;
+		String query = "SELECT * FROM user WHERE username = ?";
+
+		try {
+			conn = super.getDatabaseConnection();
+			ps = conn.prepareStatement(query);
+			ps.setString(1, username);
+			rs = ps.executeQuery();
+
+			if (rs.next()) {
+				duplicate = true;
+			}
+			ps.close();
+			conn.close();
+		} catch (Exception ex) {
+			ex.printStackTrace();
+		}
+		return duplicate;
+	}
+
+	@Override
+	public boolean checkExistPhone(String phone) {
+		boolean duplicate = false;
+		String query = "SELECT * FROM user WHERE phone = ?";
+
+		try {
+			conn = super.getDatabaseConnection();
+			ps = conn.prepareStatement(query);
+			ps.setString(1, phone);
+			rs = ps.executeQuery();
+
+			if (rs.next()) {
+				duplicate = true;
+			}
+			ps.close();
+			conn.close();
+		} catch (Exception ex) {
+			ex.printStackTrace();
+		}
+		return duplicate;
+	}
+
 	public static void main(String[] args) {
-		UserDaoImple userDao = new UserDaoImple();
-
-		System.out.println(userDao.login("leduy", "123@@"));
-
-		System.out.println(userDao.register(5, "abc", "abcd@gmail.com", "123", "ABC", "rsda21ess"));
-
-		List<UserModel> list = userDao.findAll();
-
-		for (UserModel user : list) {
-			System.out.println(user);
+		try {
+			IUserDao userDao = new UserDaoImple();
+			System.out.println(userDao.findAll());
+		} catch (Exception e) {
+			e.printStackTrace();
 		}
 	}
+
 }
