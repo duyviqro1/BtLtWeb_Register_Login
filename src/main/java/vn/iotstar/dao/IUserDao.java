@@ -22,7 +22,7 @@ public interface IUserDao {
 
 	boolean register(String username, String email, String password, String fullname, String image);
 
-	boolean changePassword(String username, String newPassword);
+	boolean updatePassword(String username, String newPassword);
 
 	void update(String username, String fullname, String image, String phone);
 	

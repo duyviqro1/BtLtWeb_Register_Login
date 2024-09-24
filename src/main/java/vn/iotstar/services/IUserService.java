@@ -11,6 +11,6 @@ public interface IUserService {
 	boolean checkExistPhone(String phone);
 	void insert(UserModel user);
 	boolean register(String email, String password, String username, String fullname, String phone);
-	void updatePassword(String username, String password);
+	boolean updatePassword(String username, String newPassword);
 	void update(String username, String image, String fullname, String phone);
 }

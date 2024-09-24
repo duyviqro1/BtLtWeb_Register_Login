@@ -1,53 +1,58 @@
 package vn.iotstar.controllers;
 
 import java.io.IOException;
-
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import vn.iotstar.models.UserModel;
-
 import vn.iotstar.services.IUserService;
 import vn.iotstar.services.impl.UserServiceImpl;
 
-	@WebServlet(urlPatterns = { "/forgotpassword" })
-	public class ForgotPasswordControllers extends HttpServlet {
-		IUserService service = new UserServiceImpl();
-		private static final long serialVersionUID = -5239443831057636103L;
+@WebServlet(urlPatterns = "/forgotpassword")
+public class ForgotPasswordControllers extends HttpServlet {
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
 
-		@Override
-		protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-			req.getRequestDispatcher("/view/forgotpassword.jsp").forward(req, resp);
-		}
-
-		@Override
-		protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-			resp.setContentType("text/html");
-			resp.setCharacterEncoding("UTF-8");
-			req.setCharacterEncoding("UTF-8");
-
-			String username = req.getParameter("uname");
-			String email = req.getParameter("email");
-
-			UserModel user = service.findbyUsername(username);
-
-			if (user != null && user.getEmail().equals(email)) {
-//			        String sm = user.getEmail();
-//			        boolean test = sm.EmailSend(user);
-//			        
-//			        if (test) {
-//			            req.setAttribute("message", "Vui lòng kiểm tra email để nhận mật khẩu mới nhé.");
-//			        } else {
-//			            req.setAttribute("error", "Lỗi khi gửi email!");
-//			        }
-//			    } else {
-//			        req.setAttribute("error", "Tên đăng nhập hoặc email không đúng!");
-//			    }
-
-				req.getRequestDispatcher("/view/forgotpassword.jsp").forward(req, resp);
-			}
-		}
+	@Override
+	protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+		// TODO Auto-generated method stub
+		req.getRequestDispatcher("/view/forgotpassword.jsp").forward(req, resp);
 	}
 
+	@Override
+	protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+		resp.setCharacterEncoding("UTF-8");
+		req.setCharacterEncoding("UTF-8");
+
+		String username = req.getParameter("uname");
+		String password = req.getParameter("psw");
+
+		String alertMsg = "";
+		if (username.isEmpty() || password.isEmpty()) {
+			alertMsg = "Tài khoản hoặc mật khẩu không được rỗng";
+			req.setAttribute("alert", alertMsg);
+			req.getRequestDispatcher("/views/forgetPassword.jsp").forward(req, resp);
+			return;
+		}
+		UserServiceImpl service = new UserServiceImpl();
+
+		if (!service.checkExistUsername(username)) {
+			alertMsg = "Tài khoản không tồn tại!";
+			req.setAttribute("alert", alertMsg);
+			req.getRequestDispatcher("/view/forgotp assword.jsp").forward(req, resp);
+			return;
+		}
+		boolean tmp = service.updatePassword(username, password);
+		if (tmp) {
+			resp.sendRedirect(req.getContextPath() + "/login");
+		} else {
+			alertMsg = "Có lỗi xảy ra";
+			req.setAttribute("alert", alertMsg);
+			req.getRequestDispatcher("/view/forgotpassword.jsp").forward(req, resp);
+		}
+	}
+}

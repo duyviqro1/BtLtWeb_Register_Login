@@ -59,8 +59,10 @@ public class UserServiceImpl implements IUserService {
 	}
 
 	@Override
-	public void updatePassword(String username, String password) {
-		UserServiceImpl userService = new UserServiceImpl();
+	public boolean updatePassword(String username, String newPassword) {
+		return userDao.updatePassword(username, newPassword);
 	}
+
+
 
 }

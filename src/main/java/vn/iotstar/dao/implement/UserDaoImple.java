@@ -199,7 +199,7 @@ public class UserDaoImple extends DBConnectMySQL implements IUserDao {
 	}
 
 	@Override
-	public boolean changePassword(String username, String newPassword) {
+	public boolean updatePassword(String username, String newPassword) {
 		String sql = "UPDATE user SET password = ? WHERE username = ?";
 
 		try {

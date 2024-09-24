@@ -3,11 +3,11 @@ package vn.iotstar.controllers;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.PrintWriter;
 
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.MultipartConfig;
 import jakarta.servlet.annotation.WebServlet;
-import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -25,7 +25,7 @@ import vn.iotstar.utils.Constant;
 public class ProfileControllers extends HttpServlet {
 
 	private static final long serialVersionUID = 1L;
-	IUserService userService = new UserServiceImpl();
+	IUserService service = new UserServiceImpl();
 
 	@Override
 	protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
@@ -53,45 +53,41 @@ public class ProfileControllers extends HttpServlet {
 	protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
 		HttpSession session = req.getSession();
 		UserModel account = (UserModel) session.getAttribute("account");
-		
+
 		String fileName = account.getImage();
 		String username = account.getUsername();
 		String image = account.getImage();
 		String fullname = req.getParameter("fullname");
 		String phone = req.getParameter("phone");
-		
+
 		// Xu ly upload file
-		String uploadPath = getServletContext().getRealPath("") + Constant.UPLOAD_DIRECTORY;
-		File uploadDir = new File(uploadPath);
-		if (!uploadDir.exists())
-			uploadDir.mkdir();
-		try {
-//			for (Part part : req.getParts()) {
-//				fileName =  part.getSubmittedFileName();
-//				part.write(uploadPath + File.separator + fileName);
-//			}
-			Part part = req.getPart("multiPartServlet");
-			if(part != null) {
-				fileName =  part.getSubmittedFileName();
+		Part part = req.getPart("multiPartServlet");
+		if (part != null && part.getSize() > 0) {
+			String uploadPath = getServletContext().getRealPath("") + Constant.UPLOAD_DIRECTORY;
+			File uploadDir = new File(uploadPath);
+			if (!uploadDir.exists())
+				uploadDir.mkdir();
+			try {
+				fileName = part.getSubmittedFileName();
 				part.write(uploadPath + File.separator + fileName);
 				req.setAttribute("message", "File " + fileName + " has uploaded successfully!");
 				image = "./uploads/" + fileName;
+			} catch (FileNotFoundException fne) {
+				req.setAttribute("message", "There was an error: " + fne.getMessage());
 			}
-		} catch (FileNotFoundException fne) {
-			req.setAttribute("message", "There was an error: " + fne.getMessage());
 		}
 
 		resp.setContentType("text/html");
 		resp.setCharacterEncoding("UTF-8");
 		req.setCharacterEncoding("UTF-8");
 
-		userService.update(username, image, fullname, phone);
-		
+		service.update(username, image, fullname, phone);
+
 		account.setImage(image);
 		account.setFullname(fullname);
 		account.setPhone(phone);
 		session.setAttribute("account", account);
-		
-		req.getRequestDispatcher("/view/profile.jsp").forward(req, resp);
+
+		doGet(req, resp);
 	}
 }
