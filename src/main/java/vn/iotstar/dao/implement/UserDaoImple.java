@@ -21,7 +21,7 @@ public class UserDaoImple extends DBConnectMySQL implements IUserDao {
 		String sql = "select * from user";
 		List<UserModel> list = new ArrayList<>();
 		try {
-			conn = super.getDatabaseConnection();
+			conn = new DBConnectMySQL().getDatabaseConnection();
 			ps = conn.prepareStatement(sql);
 			rs = ps.executeQuery();
 
@@ -29,8 +29,8 @@ public class UserDaoImple extends DBConnectMySQL implements IUserDao {
 				list.add(new UserModel(rs.getInt("id"), rs.getString("username"), rs.getString("email"),
 						rs.getString("fullname"), rs.getString("image"), rs.getString("password"),
 						rs.getString("phone"), rs.getInt("roleid"), rs.getDate("createDate")));
+				return list;
 			}
-			return list;
 
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -44,15 +44,23 @@ public class UserDaoImple extends DBConnectMySQL implements IUserDao {
 		String sql = "select * from user where user.id = ?";
 
 		try {
-			conn = super.getDatabaseConnection();
+			conn = new DBConnectMySQL().getDatabaseConnection();
 			ps = conn.prepareStatement(sql);
 			ps.setInt(1, id);
 			rs = ps.executeQuery();
 
-			if (rs.next()) {
-				return new UserModel(rs.getInt("id"), rs.getString("username"), rs.getString("email"),
-						rs.getString("password"), rs.getString("fullname"), rs.getString("image"),
-						rs.getString("phone"), rs.getInt("roleid"), rs.getDate("createDate"));
+			while (rs.next()) {
+				UserModel user = new UserModel();
+				user.setId(rs.getInt("id"));
+				user.setUsername(rs.getString("username"));
+				user.setEmail(rs.getString("email"));
+				user.setPassword(rs.getString("password"));
+				user.setFullname(rs.getString("fullname"));
+				user.setImage(rs.getString("images"));
+				user.setPhone(rs.getString("phone"));
+				user.setRoleid(Integer.parseInt(rs.getString("roleid")));
+				user.setCreateDate(rs.getDate("createDate"));
+				return user;
 			}
 
 		} catch (Exception e) {
@@ -93,17 +101,24 @@ public class UserDaoImple extends DBConnectMySQL implements IUserDao {
 		String sql = "select * from user where username = ?";
 
 		try {
-			conn = super.getDatabaseConnection();
+			conn = new DBConnectMySQL().getDatabaseConnection();
 			ps = conn.prepareStatement(sql);
 			ps.setString(1, username);
 			rs = ps.executeQuery();
 
-			if (rs.next()) {
-				return new UserModel(rs.getInt("id"), rs.getString("username"), rs.getString("email"),
-						rs.getString("fullname"), rs.getString("image"), rs.getString("password"),
-						rs.getString("phone"), rs.getInt("roleid"), rs.getDate("createDate"));
+			while (rs.next()) {
+				UserModel user = new UserModel();
+				user.setId(rs.getInt("id"));
+				user.setUsername(rs.getString("username"));
+				user.setEmail(rs.getString("email"));
+				user.setFullname(rs.getString("fullname"));
+				user.setImage(rs.getString("image"));
+				user.setPassword(rs.getString("password"));
+				user.setPhone(rs.getString("phone"));
+				user.setRoleid(Integer.parseInt(rs.getString("roleid")));
+				user.setCreateDate(rs.getDate("createDate"));
+				return user;
 			}
-
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
@@ -160,7 +175,7 @@ public class UserDaoImple extends DBConnectMySQL implements IUserDao {
 		String query = "SELECT * FROM user WHERE phone = ?";
 
 		try {
-			conn = super.getDatabaseConnection();
+			conn = new DBConnectMySQL().getDatabaseConnection();
 			ps = conn.prepareStatement(query);
 			ps.setString(1, phone);
 			rs = ps.executeQuery();
@@ -176,10 +191,52 @@ public class UserDaoImple extends DBConnectMySQL implements IUserDao {
 		return duplicate;
 	}
 
-	public static void main(String[] args) {
+	public boolean register(String username, String email, String password, String fullname, String images) {
+		if (this.checkExistUsername(username) || this.checkExistEmail(email))
+			return false;
+		// this.insert(new UserModel( username, email, password, fullname, images));
+		return true;
+	}
+
+	@Override
+	public boolean changePassword(String username, String newPassword) {
+		String sql = "UPDATE user SET password = ? WHERE username = ?";
+
 		try {
-			IUserDao userDao = new UserDaoImple();
-			System.out.println(userDao.findAll());
+			conn = getDatabaseConnection();
+			ps = conn.prepareStatement(sql);
+			ps.setString(1, newPassword);
+			ps.setString(2, username);
+
+			int result = ps.executeUpdate();
+			if (result > 0) {
+				return true; // Password updated successfully
+			} else {
+				return false; // No rows updated, username not found
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+			return false; // An error occurred during the update
+		}
+	}
+
+	@Override
+	public void update(String username, String image, String fullname, String phone) {
+
+		String sql = "UPDATE user SET fullname = ?, image = ?, phone = ? WHERE username = ?";
+
+		try {
+			conn = super.getDatabaseConnection();
+
+			ps = conn.prepareStatement(sql);
+
+			ps.setString(1, fullname);
+			ps.setString(2, image);
+			ps.setString(3, phone);
+			ps.setString(4, username);
+
+			ps.executeUpdate();
+
 		} catch (Exception e) {
 			e.printStackTrace();
 		}

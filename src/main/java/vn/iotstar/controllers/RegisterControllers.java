@@ -33,6 +33,7 @@ public class RegisterControllers extends HttpServlet {
 		resp.setContentType("text/html");
 		resp.setCharacterEncoding("UTF-8");
 		req.setCharacterEncoding("UTF-8");
+
 		String username = req.getParameter("uname");
 		String password = req.getParameter("psw");
 		String passwordRepeat = req.getParameter("psw-repeat");
@@ -41,7 +42,7 @@ public class RegisterControllers extends HttpServlet {
 		String phone = req.getParameter("phone");
 
 		String alertMsg = "";
-		
+
 		if (service.checkExistEmail(email)) {
 			alertMsg = "Email đã tồn tại!";
 			req.setAttribute("alert", alertMsg);
@@ -54,14 +55,14 @@ public class RegisterControllers extends HttpServlet {
 			req.getRequestDispatcher(Constant.REGISTER).forward(req, resp);
 			return;
 		}
-		
+
 		if (service.checkExistPhone(phone)) {
 			alertMsg = "Số điện thoại đã tồn tại!";
 			req.setAttribute("alert", alertMsg);
 			req.getRequestDispatcher(Constant.REGISTER).forward(req, resp);
 			return;
 		}
-		
+
 		if (!password.equals(passwordRepeat)) {
 			alertMsg = "Mật khẩu không giống nhau";
 			req.setAttribute("alert", alertMsg);
@@ -72,7 +73,8 @@ public class RegisterControllers extends HttpServlet {
 		boolean isSuccess = service.register(email, password, username, fullname, phone);
 		if (isSuccess) {
 			// SendMail sm = new SendMail();
-			// sm.sendMail(email, "Shopping.iotstar.vn", "Welcome to Shopping. Please Login to use service. Thanks !");
+			// sm.sendMail(email, "Shopping.iotstar.vn", "Welcome to Shopping. Please Login
+			// to use service. Thanks !");
 			req.setAttribute("alert", alertMsg);
 			resp.sendRedirect(req.getContextPath() + "/login");
 		} else {
